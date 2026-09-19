@@ -1,7 +1,7 @@
 ## 1. Project Foundation
 
 - [x] 1.1 Add version-catalog entries and Gradle configuration for Kotlin Serialization, Retrofit/OkHttp, Room with KSP, lifecycle ViewModel/Compose, Navigation Compose, Koin 4, coroutines testing, and Java time desugaring; verify `./gradlew assembleDebug` resolves dependencies and succeeds
-- [ ] 1.2 Add internet permission, the CrisisProtect `Application` entry point, and package directories for domain, data, and features while preserving `io.jadu.crisisprotect`; verify the debug app starts without dependency-injection errors
+- [x] 1.2 Add internet permission, the CrisisProtect `Application` entry point, and package directories for domain, data, and features while preserving `io.jadu.crisisprotect`; verify the debug app starts without dependency-injection errors
 
 ## 2. Domain and Remote Data
 

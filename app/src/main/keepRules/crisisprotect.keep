@@ -1,0 +1,7 @@
+# Retrofit creates this interface at runtime from its HTTP annotations.
+-keep,allowoptimization,allowobfuscation interface io.jadu.crisisprotect.data.remote.UsgsEarthquakeService
+
+# Kotlin Serialization resolves these generated serializers at runtime when decoding
+# the USGS GeoJSON response. Keep this boundary narrow to the remote DTO package.
+-keep,allowoptimization,allowobfuscation @kotlinx.serialization.Serializable class io.jadu.crisisprotect.data.remote.** { *; }
+-keep,allowoptimization,allowobfuscation class io.jadu.crisisprotect.data.remote.**$$serializer { *; }

@@ -5,6 +5,17 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val releaseKeystorePath = providers.environmentVariable("CRISISPROTECT_KEYSTORE_PATH").orNull
+val releaseStorePassword = providers.environmentVariable("CRISISPROTECT_STORE_PASSWORD").orNull
+val releaseKeyAlias = providers.environmentVariable("CRISISPROTECT_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.environmentVariable("CRISISPROTECT_KEY_PASSWORD").orNull
+val hasReleaseSigning = listOf(
+    releaseKeystorePath,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { it != null }
+
 android {
     namespace = "io.jadu.crisisprotect"
     compileSdk {
@@ -21,10 +32,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseStorePassword!!
+                keyAlias = releaseKeyAlias!!
+                keyPassword = releaseKeyPassword!!
+            }
+        }
+    }
     buildTypes {
         release {
             optimization {
-                enable = false
+                enable = true
+            }
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }
