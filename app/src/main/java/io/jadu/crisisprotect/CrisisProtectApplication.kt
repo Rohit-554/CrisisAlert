@@ -2,6 +2,7 @@ package io.jadu.crisisprotect
 
 import android.app.Application
 import io.jadu.crisisprotect.di.appModules
+import io.jadu.crisisprotect.background.RefreshScheduler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -12,5 +13,6 @@ class CrisisProtectApplication : Application() {
             androidContext(this@CrisisProtectApplication)
             modules(appModules)
         }
+        RefreshScheduler.schedule(this)
     }
 }

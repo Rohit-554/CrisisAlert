@@ -13,7 +13,7 @@
 
 - [x] 3.1 Create the Room event entity, DAO queries for ordered feed and event-by-ID observation, database definition, and entity/domain mappers; verify Room schema generation and mapper unit tests succeed
 - [ ] 3.2 Implement transactional replacement of only the USGS snapshot without clearing data before a valid response is ready; verify an in-memory Room test observes atomic replacement and stable descending ordering
-- [ ] 3.3 Implement the offline-first repository with Room flows, typed refresh failures, valid-record filtering, and mutex-protected refresh; verify repository tests cover successful refresh, retained cache after failure, invalid top-level response, and concurrent refresh suppression
+- [x] 3.3 Implement the offline-first repository with Room flows, typed refresh failures, valid-record filtering, and mutex-protected refresh; verify repository tests cover successful refresh, retained cache after failure, invalid top-level response, and concurrent refresh suppression
 - [ ] 3.4 Define Koin database, network, repository, and ViewModel modules and start them from the application class; verify a Koin graph check or application startup resolves every declared dependency
 
 ## 4. Home Feed

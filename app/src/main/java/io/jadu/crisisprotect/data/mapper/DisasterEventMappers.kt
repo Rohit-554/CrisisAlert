@@ -44,6 +44,10 @@ fun DisasterEvent.toEntity(): DisasterEventEntity = DisasterEventEntity(
     magnitude = magnitude,
     source = source,
     sourceUrl = sourceUrl,
+    description = description,
+    upstreamSource = upstreamSource,
+    upstreamSourceUrl = upstreamSourceUrl,
+    isSaved = isSaved,
 )
 
 fun DisasterEventEntity.toDomain(): DisasterEvent = DisasterEvent(
@@ -58,4 +62,8 @@ fun DisasterEventEntity.toDomain(): DisasterEvent = DisasterEvent(
     magnitude = magnitude,
     source = source,
     sourceUrl = sourceUrl,
+    description = description,
+    upstreamSource = upstreamSource,
+    upstreamSourceUrl = upstreamSourceUrl,
+    isSaved = isSaved,
 )

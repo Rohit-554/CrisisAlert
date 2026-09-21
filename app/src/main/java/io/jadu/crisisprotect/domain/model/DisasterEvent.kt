@@ -14,6 +14,10 @@ data class DisasterEvent(
     val magnitude: Double?,
     val source: String,
     val sourceUrl: String?,
+    val description: String? = null,
+    val upstreamSource: String? = null,
+    val upstreamSourceUrl: String? = null,
+    val isSaved: Boolean = false,
 )
 
 enum class DisasterType {
