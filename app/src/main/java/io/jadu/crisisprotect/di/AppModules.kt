@@ -44,14 +44,14 @@ val networkModule = module {
             explicitNulls = false
         }
     }
-    single(named("usgsRetrofit")) {
+    single {
         OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
             .callTimeout(20, TimeUnit.SECONDS)
             .build()
     }
-    single {
+    single(named("usgsRetrofit")) {
         Retrofit.Builder()
             .baseUrl(UsgsBaseUrl)
             .client(get())

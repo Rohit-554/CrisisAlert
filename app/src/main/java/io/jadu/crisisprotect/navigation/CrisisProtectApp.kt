@@ -1,6 +1,7 @@
 package io.jadu.crisisprotect.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -48,6 +49,9 @@ fun CrisisProtectApp() {
         backStack = backStack,
         entryProvider = destinations,
         onBack = { backStack.removeLastOrNull() },
-        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator<NavKey>()),
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
+            rememberViewModelStoreNavEntryDecorator<NavKey>(),
+        ),
     )
 }
