@@ -6,6 +6,7 @@ import io.jadu.crisisprotect.domain.model.DisasterType
 data class HomeUiState(
     val events: List<DisasterEvent> = emptyList(),
     val selectedFilter: DisasterType? = null,
+    val searchQuery: String = "",
     val isInitialLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val refreshFailed: Boolean = false,

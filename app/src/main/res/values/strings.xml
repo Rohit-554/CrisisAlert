@@ -2,6 +2,7 @@
     <string name="app_name">CrisisProtect</string>
     <string name="recent_global_events">Recent global events</string>
     <string name="refresh_events">Refresh events</string>
+    <string name="search_cached_events">Search cached events</string>
     <string name="filter_all">All</string>
     <string name="filter_earthquakes">Earthquakes</string>
     <string name="category_earthquake">Earthquake</string>

@@ -12,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -53,12 +55,17 @@ import org.koin.core.parameter.parametersOf
 fun DetailsRoute(eventId: String, onBack: () -> Unit) {
     val viewModel: DetailsViewModel = koinViewModel(parameters = { parametersOf(eventId) })
     val uiState by viewModel.uiState.collectAsState()
-    DetailsScreen(uiState = uiState, onBack = onBack)
+    DetailsScreen(uiState = uiState, onBack = onBack, onToggleSaved = viewModel::toggleSaved, onRetryWeather = viewModel::retryWeather)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsScreen(uiState: DetailsUiState, onBack: () -> Unit) {
+fun DetailsScreen(
+    uiState: DetailsUiState,
+    onBack: () -> Unit,
+    onToggleSaved: () -> Unit = {},
+    onRetryWeather: () -> Unit = {},
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
@@ -78,7 +85,10 @@ fun DetailsScreen(uiState: DetailsUiState, onBack: () -> Unit) {
             DetailsUiState.Unavailable -> DetailsUnavailable(Modifier.padding(paddingValues), onBack)
             is DetailsUiState.Content -> DetailsContent(
                 event = uiState.event,
+                weather = uiState.weather,
                 snackbarHostState = snackbarHostState,
+                onToggleSaved = onToggleSaved,
+                onRetryWeather = onRetryWeather,
                 modifier = Modifier.padding(paddingValues),
             )
         }
@@ -86,7 +96,14 @@ fun DetailsScreen(uiState: DetailsUiState, onBack: () -> Unit) {
 }
 
 @Composable
-private fun DetailsContent(event: DisasterEvent, snackbarHostState: SnackbarHostState, modifier: Modifier = Modifier) {
+private fun DetailsContent(
+    event: DisasterEvent,
+    weather: WeatherUiState,
+    snackbarHostState: SnackbarHostState,
+    onToggleSaved: () -> Unit,
+    onRetryWeather: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val noSourceHandlerMessage = stringResource(R.string.no_source_handler)
@@ -103,9 +120,15 @@ private fun DetailsContent(event: DisasterEvent, snackbarHostState: SnackbarHost
                     Text(stringResource(R.string.category_earthquake), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 }
                 Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                event.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                 event.magnitude?.let { magnitude ->
                     AssistChip(onClick = {}, label = { Text(stringResource(R.string.magnitude_format, magnitude)) })
                 }
+                AssistChip(
+                    onClick = onToggleSaved,
+                    label = { Text(if (event.isSaved) "Saved" else "Save event") },
+                    leadingIcon = { Icon(if (event.isSaved) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, null) },
+                )
             }
         }
         item {
@@ -123,9 +146,44 @@ private fun DetailsContent(event: DisasterEvent, snackbarHostState: SnackbarHost
                 DetailRow(stringResource(R.string.longitude), longitude)
             }
         }
+        event.latitude?.let { latitude -> event.longitude?.let { longitude ->
+            item {
+                DetailCard("Location map") {
+                    EventLocationMap(latitude, longitude)
+                    Text("© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors", style = MaterialTheme.typography.labelSmall)
+                }
+            }
+        } }
+        if (event.latitude != null && event.longitude != null) item {
+            DetailCard("Current weather") {
+                when (weather) {
+                    WeatherUiState.Idle, WeatherUiState.Loading -> Text("Loading weather…")
+                    is WeatherUiState.Available -> {
+                        weather.weather.temperatureCelsius?.let { DetailRow("Temperature", "${it} °C") }
+                        weather.weather.humidityPercent?.let { DetailRow("Humidity", "$it%") }
+                        weather.weather.precipitationMm?.let { DetailRow("Precipitation", "$it mm") }
+                        weather.weather.windSpeedKmh?.let { DetailRow("Wind", "$it km/h") }
+                        weather.weather.condition?.let { DetailRow("Conditions", it) }
+                        Text("Weather data: Open-Meteo", style = MaterialTheme.typography.labelSmall)
+                    }
+                    WeatherUiState.Unavailable -> {
+                        Text("Weather is unavailable for this event.")
+                        AssistChip(onRetryWeather, { Text(stringResource(R.string.retry)) })
+                    }
+                }
+            }
+        }
         item {
             DetailCard(stringResource(R.string.source)) {
                 Text(stringResource(R.string.data_source_format, if (event.source == "USGS") stringResource(R.string.usgs_source) else event.source))
+                event.upstreamSource?.let { upstream -> Text("Upstream source: $upstream") }
+                event.upstreamSourceUrl?.takeIf(::isSafeWebUrl)?.let { upstreamUrl ->
+                    AssistChip(
+                        onClick = { if (!context.openSafeWebUrl(upstreamUrl)) scope.launch { snackbarHostState.showSnackbar(noSourceHandlerMessage) } },
+                        label = { Text("Open upstream source") },
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
                 event.sourceUrl?.takeIf(::isSafeWebUrl)?.let { sourceUrl ->
                     AssistChip(
                         onClick = {
@@ -188,7 +246,7 @@ private fun DetailsUnavailable(modifier: Modifier, onBack: () -> Unit) {
 @Composable
 private fun DetailsCompletePreview() {
     CrisisProtectTheme {
-        DetailsScreen(
+            DetailsScreen(
             DetailsUiState.Content(
                 DisasterEvent(
                     id = "usgs:preview",

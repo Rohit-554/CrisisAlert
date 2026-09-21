@@ -39,12 +39,13 @@ class OfflineFirstDisasterRepository(
                 .mapNotNull { it.toDisasterEventOrNull() }
                 .map { it.toEntity() }
             dao.replaceEventsForSource(UsgsSource, usgsEvents)
-            runCatching {
+            val eonetResult = runCatching {
                 requireNotNull(eonetService).getRecentEvents().features
                     .mapNotNull { it.toDisasterEventOrNull() }
                     .map { it.toEntity() }
-            }.onSuccess { eonetEvents -> dao.replaceEventsForSource(EonetSource, eonetEvents) }
-            RefreshResult.Success
+            }
+            eonetResult.onSuccess { eonetEvents -> dao.replaceEventsForSource(EonetSource, eonetEvents) }
+            if (eonetService != null && eonetResult.isFailure) RefreshResult.Failure else RefreshResult.Success
         } catch (_: Exception) {
             RefreshResult.Failure
         } finally {

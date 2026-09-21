@@ -33,6 +33,11 @@ class HomeViewModel(
         updateVisibleEvents()
     }
 
+    fun updateSearchQuery(query: String) {
+        _uiState.value = _uiState.value.copy(searchQuery = query)
+        updateVisibleEvents()
+    }
+
     fun refresh() {
         if (_uiState.value.isRefreshing) return
         _uiState.value = _uiState.value.copy(isRefreshing = true, refreshFailed = false)
@@ -51,8 +56,15 @@ class HomeViewModel(
     private fun updateVisibleEvents() {
         val selectedFilter = _uiState.value.selectedFilter
         val visibleEvents = cachedEvents.filter { event ->
-            selectedFilter == null || event.type == selectedFilter
+            (selectedFilter == null || event.type == selectedFilter) &&
+                (searchQueryMatches(event, _uiState.value.searchQuery))
         }
         _uiState.value = _uiState.value.copy(events = visibleEvents)
+    }
+
+    private fun searchQueryMatches(event: DisasterEvent, query: String): Boolean {
+        if (query.isBlank()) return true
+        return listOfNotNull(event.title, event.locationName, event.type.name)
+            .any { value -> value.contains(query, ignoreCase = true) }
     }
 }

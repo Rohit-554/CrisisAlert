@@ -1,35 +1,53 @@
 package io.jadu.crisisprotect.navigation
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import io.jadu.crisisprotect.feature.details.DetailsRoute
 import io.jadu.crisisprotect.feature.home.HomeRoute
+import io.jadu.crisisprotect.feature.saved.SavedEventsRoute
+import kotlinx.serialization.Serializable
 
-private object Destinations {
-    const val Home = "home"
-    const val Details = "details/{eventId}"
+@Serializable
+private data object HomeRouteKey : NavKey
 
-    fun details(eventId: String): String = "details/${Uri.encode(eventId)}"
-}
+@Serializable
+private data object SavedEventsRouteKey : NavKey
+
+@Serializable
+private data class DetailsRouteKey(val eventId: String) : NavKey
 
 @Composable
 fun CrisisProtectApp() {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Destinations.Home) {
-        composable(Destinations.Home) {
-            HomeRoute(onEventSelected = { eventId -> navController.navigate(Destinations.details(eventId)) })
+    val backStack = rememberNavBackStack(HomeRouteKey)
+    val destinations = entryProvider<NavKey> {
+        entry<HomeRouteKey> {
+            HomeRoute(
+                onEventSelected = { eventId -> backStack.add(DetailsRouteKey(eventId)) },
+                onSavedEvents = { backStack.add(SavedEventsRouteKey) },
+            )
         }
-        composable(
-            route = Destinations.Details,
-            arguments = listOf(navArgument("eventId") { type = NavType.StringType }),
-        ) { backStackEntry ->
-            val eventId = backStackEntry.arguments?.getString("eventId")?.let(Uri::decode).orEmpty()
-            DetailsRoute(eventId = eventId, onBack = navController::popBackStack)
+        entry<SavedEventsRouteKey> {
+            SavedEventsRoute(
+                onBack = { backStack.removeLastOrNull() },
+                onEventSelected = { eventId -> backStack.add(DetailsRouteKey(eventId)) },
+            )
+        }
+        entry<DetailsRouteKey> { route ->
+            DetailsRoute(
+                eventId = route.eventId,
+                onBack = { backStack.removeLastOrNull() },
+            )
         }
     }
+
+    NavDisplay(
+        backStack = backStack,
+        entryProvider = destinations,
+        onBack = { backStack.removeLastOrNull() },
+        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator<NavKey>()),
+    )
 }

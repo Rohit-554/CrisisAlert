@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +28,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -49,10 +52,11 @@ import java.time.Instant
 @Composable
 fun HomeRoute(
     onEventSelected: (String) -> Unit,
+    onSavedEvents: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    HomeScreen(uiState, viewModel::refresh, viewModel::selectFilter, onEventSelected)
+    HomeScreen(uiState, viewModel::refresh, viewModel::selectFilter, viewModel::updateSearchQuery, onEventSelected, onSavedEvents)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +65,9 @@ fun HomeScreen(
     uiState: HomeUiState,
     onRefresh: () -> Unit,
     onFilterSelected: (DisasterType?) -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
     onEventSelected: (String) -> Unit,
+    onSavedEvents: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -79,6 +85,7 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onSavedEvents) { Icon(Icons.Default.Bookmark, "Saved events") }
                     IconButton(onClick = onRefresh, enabled = !uiState.isRefreshing) {
                         Icon(Icons.Default.Refresh, stringResource(R.string.refresh_events))
                     }
@@ -87,6 +94,13 @@ fun HomeScreen(
         },
     ) { paddingValues ->
         Column(Modifier.fillMaxSize().padding(paddingValues)) {
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = onSearchQueryChanged,
+                label = { Text(stringResource(R.string.search_cached_events)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            )
             FilterRow(uiState.selectedFilter, onFilterSelected)
             if (uiState.isRefreshing && uiState.events.isNotEmpty()) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -104,16 +118,14 @@ fun HomeScreen(
 
 @Composable
 private fun FilterRow(selectedFilter: DisasterType?, onFilterSelected: (DisasterType?) -> Unit) {
-    Row(
+    LazyRow(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        FilterChip(selectedFilter == null, { onFilterSelected(null) }, { Text(stringResource(R.string.filter_all)) })
-        FilterChip(
-            selectedFilter == DisasterType.EARTHQUAKE,
-            { onFilterSelected(DisasterType.EARTHQUAKE) },
-            { Text(stringResource(R.string.filter_earthquakes)) },
-        )
+        item { FilterChip(selectedFilter == null, { onFilterSelected(null) }, { Text(stringResource(R.string.filter_all)) }) }
+        items(DisasterType.entries) { type ->
+            FilterChip(selectedFilter == type, { onFilterSelected(type) }, { Text(type.name.lowercase().replaceFirstChar(Char::uppercase)) })
+        }
     }
 }
 
@@ -140,7 +152,7 @@ private fun EventCard(event: DisasterEvent, onClick: () -> Unit) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Default.Public, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                Text(stringResource(R.string.category_earthquake), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Text(event.type.name.lowercase().replaceFirstChar(Char::uppercase), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                 event.magnitude?.let { AssistChip(onClick, { Text(stringResource(R.string.magnitude_format, it)) }) }
             }
             Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -203,7 +215,7 @@ private fun StateContent(title: String, detail: String, actionLabel: String? = n
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
-    CrisisProtectTheme { HomeScreen(HomeUiState(isInitialLoading = false, hasLoadedOnce = true), {}, {}, {}) }
+    CrisisProtectTheme { HomeScreen(HomeUiState(isInitialLoading = false, hasLoadedOnce = true), {}, {}, {}, {}, {}) }
 }
 
 @Preview(showBackground = true)
@@ -232,7 +244,7 @@ private fun HomePopulatedPreview() {
             ),
             onRefresh = {},
             onFilterSelected = {},
-            onEventSelected = {},
+            onSearchQueryChanged = {}, onEventSelected = {},
         )
     }
 }
@@ -241,11 +253,9 @@ private fun HomePopulatedPreview() {
 @Composable
 private fun HomeDarkFilteredEmptyPreview() {
     CrisisProtectTheme(darkTheme = true) {
-        HomeScreen(
+            HomeScreen(
             HomeUiState(selectedFilter = DisasterType.EARTHQUAKE, isInitialLoading = false, hasLoadedOnce = true),
-            onRefresh = {},
-            onFilterSelected = {},
-            onEventSelected = {},
+            onRefresh = {}, onFilterSelected = {}, onSearchQueryChanged = {}, onEventSelected = {},
         )
     }
 }
