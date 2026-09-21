@@ -9,6 +9,8 @@ import io.jadu.crisisprotect.data.remote.EonetEventService
 import io.jadu.crisisprotect.data.remote.WeatherService
 import io.jadu.crisisprotect.data.repository.OfflineFirstDisasterRepository
 import io.jadu.crisisprotect.data.repository.OpenMeteoWeatherRepository
+import io.jadu.crisisprotect.feature.details.AndroidEventHapticController
+import io.jadu.crisisprotect.feature.details.EventHapticController
 import io.jadu.crisisprotect.domain.repository.DisasterRepository
 import io.jadu.crisisprotect.domain.repository.WeatherRepository
 import io.jadu.crisisprotect.feature.details.DetailsViewModel
@@ -79,11 +81,12 @@ val databaseModule = module {
 val repositoryModule = module {
     single<DisasterRepository> { OfflineFirstDisasterRepository(get(), get(), get()) }
     single<WeatherRepository> { OpenMeteoWeatherRepository(get()) }
+    single<EventHapticController> { AndroidEventHapticController(androidContext()) }
 }
 
 val viewModelModule = module {
     viewModel { HomeViewModel(get()) }
-    viewModel { (eventId: String) -> DetailsViewModel(eventId, get(), get()) }
+    viewModel { (eventId: String) -> DetailsViewModel(eventId, get(), get(), get()) }
 }
 
 val appModules = listOf(networkModule, databaseModule, repositoryModule, viewModelModule)

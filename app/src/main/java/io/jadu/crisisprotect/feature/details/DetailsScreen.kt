@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +56,7 @@ import org.koin.core.parameter.parametersOf
 fun DetailsRoute(eventId: String, onBack: () -> Unit) {
     val viewModel: DetailsViewModel = koinViewModel(parameters = { parametersOf(eventId) })
     val uiState by viewModel.uiState.collectAsState()
-    DetailsScreen(uiState = uiState, onBack = onBack, onToggleSaved = viewModel::toggleSaved, onRetryWeather = viewModel::retryWeather)
+    DetailsScreen(uiState = uiState, onBack = onBack, onToggleSaved = viewModel::toggleSaved, onRetryWeather = viewModel::retryWeather, onToggleHaptics = viewModel::toggleHapticExperience)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +66,7 @@ fun DetailsScreen(
     onBack: () -> Unit,
     onToggleSaved: () -> Unit = {},
     onRetryWeather: () -> Unit = {},
+    onToggleHaptics: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
@@ -89,6 +91,8 @@ fun DetailsScreen(
                 snackbarHostState = snackbarHostState,
                 onToggleSaved = onToggleSaved,
                 onRetryWeather = onRetryWeather,
+                haptics = uiState.haptics,
+                onToggleHaptics = onToggleHaptics,
                 modifier = Modifier.padding(paddingValues),
             )
         }
@@ -102,6 +106,8 @@ private fun DetailsContent(
     snackbarHostState: SnackbarHostState,
     onToggleSaved: () -> Unit,
     onRetryWeather: () -> Unit,
+    haptics: EventHapticUiState,
+    onToggleHaptics: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -129,6 +135,17 @@ private fun DetailsContent(
                     label = { Text(if (event.isSaved) "Saved" else "Save event") },
                     leadingIcon = { Icon(if (event.isSaved) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, null) },
                 )
+            }
+        }
+        if (haptics !is EventHapticUiState.Unsupported) item {
+            DetailCard(stringResource(R.string.haptic_experience)) {
+                Text(stringResource(R.string.haptic_educational_notice), style = MaterialTheme.typography.bodySmall)
+                when (haptics) {
+                    EventHapticUiState.Ready -> Button(onClick = onToggleHaptics) { Text(stringResource(R.string.feel_this_event)) }
+                    EventHapticUiState.Playing -> Button(onClick = onToggleHaptics) { Text(stringResource(R.string.stop_haptic_experience)) }
+                    EventHapticUiState.Unavailable -> Text(stringResource(R.string.haptic_unavailable))
+                    EventHapticUiState.Unsupported -> Unit
+                }
             }
         }
         item {

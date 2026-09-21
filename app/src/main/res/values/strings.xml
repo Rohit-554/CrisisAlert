@@ -38,4 +38,9 @@
     <string name="invalid_source_link">Source link is unavailable</string>
     <string name="no_source_handler">No app is available to open this source link</string>
     <string name="usgs_source">U.S. Geological Survey</string>
+    <string name="haptic_experience">Haptic experience</string>
+    <string name="feel_this_event">Feel this event</string>
+    <string name="stop_haptic_experience">Stop</string>
+    <string name="haptic_educational_notice">Educational haptic representation — not a real-time alert or physical reproduction.</string>
+    <string name="haptic_unavailable">Haptic feedback is unavailable on this device or is turned off in system settings.</string>
 </resources>

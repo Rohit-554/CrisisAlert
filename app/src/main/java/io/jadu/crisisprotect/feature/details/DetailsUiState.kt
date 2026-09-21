@@ -8,8 +8,16 @@ sealed interface DetailsUiState {
     data class Content(
         val event: DisasterEvent,
         val weather: WeatherUiState = WeatherUiState.Idle,
+        val haptics: EventHapticUiState = EventHapticUiState.Unsupported,
     ) : DetailsUiState
     data object Unavailable : DetailsUiState
+}
+
+sealed interface EventHapticUiState {
+    data object Unsupported : EventHapticUiState
+    data object Ready : EventHapticUiState
+    data object Playing : EventHapticUiState
+    data object Unavailable : EventHapticUiState
 }
 
 sealed interface WeatherUiState {
