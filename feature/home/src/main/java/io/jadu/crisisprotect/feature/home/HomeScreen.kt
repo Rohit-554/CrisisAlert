@@ -41,7 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.jadu.crisisprotect.R
+import io.jadu.crisisprotect.core.designsystem.R
 import io.jadu.crisisprotect.domain.model.DisasterEvent
 import io.jadu.crisisprotect.domain.model.DisasterType
 import io.jadu.crisisprotect.feature.common.toLocalizedDateTime

@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.jadu.crisisprotect.domain.model.DisasterEvent
 import io.jadu.crisisprotect.domain.repository.DisasterRepository
-import org.koin.androidx.compose.koinInject
+import org.koin.compose.koinInject
 
 @Composable
 fun SavedEventsRoute(onBack: () -> Unit, onEventSelected: (String) -> Unit) {

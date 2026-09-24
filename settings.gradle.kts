@@ -24,4 +24,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "CrisisProtect"
 include(":app")
- 
+include(":core:domain")
+include(":core:common")
+include(":core:designsystem")
+include(":data")
+include(":feature:home")
+include(":feature:details")
+include(":feature:saved")

@@ -65,10 +65,10 @@ class AndroidEventHapticController(context: Context) : EventHapticController {
     ) != 0
 
     private fun patternFor(event: DisasterEvent): HapticPattern? = when (event.type) {
-        DisasterType.EARTHQUAKE -> when {
-            event.magnitude == null -> HapticPattern.MediumEarthquake
-            event.magnitude < 4.0 -> HapticPattern.LightEarthquake
-            event.magnitude < 6.0 -> HapticPattern.MediumEarthquake
+        DisasterType.EARTHQUAKE -> when (val magnitude = event.magnitude) {
+            null -> HapticPattern.MediumEarthquake
+            in Double.NEGATIVE_INFINITY..<4.0 -> HapticPattern.LightEarthquake
+            in 4.0..<6.0 -> HapticPattern.MediumEarthquake
             else -> HapticPattern.StrongEarthquake
         }
         DisasterType.WILDFIRE -> HapticPattern.Wildfire

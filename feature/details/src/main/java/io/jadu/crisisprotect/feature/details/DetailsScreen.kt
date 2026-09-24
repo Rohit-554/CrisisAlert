@@ -40,7 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.jadu.crisisprotect.R
+import io.jadu.crisisprotect.core.designsystem.R
 import io.jadu.crisisprotect.domain.model.DisasterEvent
 import io.jadu.crisisprotect.feature.common.openSafeWebUrl
 import io.jadu.crisisprotect.feature.common.isSafeWebUrl

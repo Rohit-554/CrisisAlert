@@ -1,8 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
 }
 
 val releaseKeystorePath = providers.environmentVariable("CRISISPROTECT_KEYSTORE_PATH").orNull
@@ -62,11 +60,13 @@ android {
     }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 dependencies {
+    implementation(project(":core:domain"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":data"))
+    implementation(project(":feature:home"))
+    implementation(project(":feature:details"))
+    implementation(project(":feature:saved"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -80,21 +80,15 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.kotlinx.serialization)
-    implementation(libs.okhttp)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.koin.android)
-    implementation(libs.koin.androidx.compose)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.maplibre.android)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
-    ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.koin.test)
+    testImplementation(project(":core:common"))
+    testImplementation(libs.kotlinx.serialization.json)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

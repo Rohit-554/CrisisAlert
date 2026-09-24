@@ -14,7 +14,31 @@ An offline-first Android earthquake feed. CrisisProtect fetches the USGS M2.5+ p
 - Room, Coroutines/Flow, Koin
 - R8 optimization for release builds
 
-## Data flow
+## Multi-module architecture
+
+The project is structured so a growing feature does not automatically become a growing app-wide dependency:
+
+```mermaid
+flowchart TB
+    App[":app"\nApplication, navigation, DI, background work]
+    Home[":feature:home"\nBrowse, filter, search]
+    Details[":feature:details"\nEvent details, map, weather, haptics]
+    Saved[":feature:saved"\nOffline bookmarks]
+    Data[":data"\nRetrofit, Room, repository implementations]
+    Domain[":core:domain"\nModels and repository contracts]
+    Common[":core:common"\nSmall Android utilities]
+    Design[":core:designsystem"\nTheme and shared resources]
+
+    App --> Home & Details & Saved & Data & Design
+    Home --> Domain & Common & Design
+    Details --> Domain & Common & Design
+    Saved --> Domain & Design
+    Data --> Domain
+```
+
+This keeps feature ownership clear: teams can develop and test Home, Details, and Saved independently; feature modules only see stable domain contracts rather than Retrofit or Room; and the `app` module remains the single place that wires navigation and dependency injection. New features can depend on `core:domain` and shared UI without creating feature-to-feature dependencies.
+
+## Runtime data flow
 
 ```mermaid
 flowchart LR
@@ -34,4 +58,3 @@ flowchart LR
 ```
 
 The production feed is the public [USGS Earthquake GeoJSON summary](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php); it requires no API key.
-
